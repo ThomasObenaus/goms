@@ -22,7 +22,7 @@ help: ## Prints the help
 
 test: sep ## Runs all unittests and generates a coverage report.
 	@echo "--> Run the unit-tests"
-	@go test ./ -covermode=count -coverprofile=coverage.out
+	@go test ./ ./logging ./api -covermode=count -coverprofile=coverage.out
 
 build: sep ## Builds the goms binary.
 	@echo "--> Build the $(name) in $(build_destination)"
