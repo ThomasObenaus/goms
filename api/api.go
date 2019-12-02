@@ -12,7 +12,7 @@ import (
 
 // API represents the implementation of the HTTP api of sokar
 type API struct {
-	Router *httprouter.Router
+	*httprouter.Router
 
 	port     int
 	logger   zerolog.Logger
