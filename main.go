@@ -35,10 +35,10 @@ func main() {
 	api := api.New(port, api.WithLogger(loggingFactory.NewNamedLogger("goms.api")))
 
 	authHandler := auth.New("http://localhost:8180/auth/realms/gocloak/protocol/openid-connect/certs",
-		"goms", "http://localhost:8180/auth/realms/gocloak")
+		"goms", "http://localhost:8180/auth/realms/gocloak", auth.WithLogger(loggingFactory.NewNamedLogger("auth")))
 
 	// Register build info end-point
-	api.GET(PathBuildInfo, authHandler.HandleSecure(buildInfo.BuildInfo))
+	api.GET(PathBuildInfo, authHandler.HandleSecure(buildInfo.BuildInfo, auth.HasRealmRole("uma_authorization")))
 	loggerMain.Info().Str("end-point", "build info").Msgf("Build Info end-point set up at %s", PathBuildInfo)
 
 	// Install signal handler for shutdown

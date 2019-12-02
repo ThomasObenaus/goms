@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -18,6 +17,7 @@ type Auth struct {
 	jwkDownloaderTimeout time.Duration
 	jwkCacheMaxKeyAge    time.Duration
 	jwkCacheMaxEntries   int
+	jwkClient            *auth0.JWKClient
 
 	jwtAlg jose.SignatureAlgorithm
 }
@@ -72,57 +72,41 @@ func New(uriJwkEndpoint, jwtAudience, jwtIssuer string, options ...Option) *Auth
 
 	extractor := auth0.RequestTokenExtractorFunc(auth0.FromHeader)
 	keyCache := auth0.NewMemoryKeyCacher(auth.jwkCacheMaxKeyAge, auth.jwkCacheMaxEntries)
-	jwkClient := auth0.NewJWKClientWithCache(authOptions, extractor, keyCache)
+	auth.jwkClient = auth0.NewJWKClientWithCache(authOptions, extractor, keyCache)
 
 	audience := []string{jwtAudience}
-	configuration := auth0.NewConfiguration(jwkClient, audience, jwtIssuer, auth.jwtAlg)
+	configuration := auth0.NewConfiguration(auth.jwkClient, audience, jwtIssuer, auth.jwtAlg)
 	auth.validator = auth0.NewValidator(configuration, nil)
 
 	return auth
 }
 
-func (auth *Auth) HandleSecure(next httprouter.Handle) httprouter.Handle {
+func (auth *Auth) HandleSecure(next httprouter.Handle, claimHandler ClaimHandler) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 
 		token, err := auth.validator.ValidateRequest(r)
 		if err != nil {
-			fmt.Println(err)
-			fmt.Println("Token is not valid:", token)
-			w.WriteHeader(http.StatusUnauthorized)
-			w.Write([]byte("Unauthorized"))
-		} else {
-			next(w, r, p)
+			auth.logger.Err(err).Msg("The given token is not valid.")
+			http.Error(w, "Not Authorized", http.StatusUnauthorized)
+			return
 		}
-	}
-}
 
-func NewValidator() *auth0.JWTValidator {
-	client := &http.Client{}
-	options := auth0.JWKClientOptions{
-		URI:    "http://localhost:8180/auth/realms/gocloak/protocol/openid-connect/certs",
-		Client: client,
-	}
-	extractor := auth0.RequestTokenExtractorFunc(auth0.FromHeader)
-	keyCache := auth0.NewMemoryKeyCacher(time.Hour*1, 10)
-	jwkClient := auth0.NewJWKClientWithCache(options, extractor, keyCache)
-
-	audience := []string{"goms"}
-	configuration := auth0.NewConfiguration(jwkClient, audience, "http://localhost:8180/auth/realms/gocloak", jose.RS256)
-	return auth0.NewValidator(configuration, nil)
-}
-
-func AuthMiddleware(next httprouter.Handle, validator *auth0.JWTValidator) httprouter.Handle {
-	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-
-		token, err := validator.ValidateRequest(r)
+		// extract the claims from the token
+		claims := Claims{}
+		err = token.UnsafeClaimsWithoutVerification(&claims)
 		if err != nil {
-			fmt.Println(err)
-			fmt.Println("Token is not valid:", token)
-			w.WriteHeader(http.StatusUnauthorized)
-			w.Write([]byte("Unauthorized"))
-		} else {
-			next(w, r, p)
+			auth.logger.Err(err).Msg("Failed to decode claims.")
+			http.Error(w, "Failure decoding token claims", http.StatusUnauthorized)
+			return
 		}
-	}
 
+		err = claimHandler(claims)
+		if err != nil {
+			auth.logger.Err(err).Msg("Denied by claim handler.")
+			http.Error(w, "Access not allowed", http.StatusForbidden)
+			return
+		}
+
+		next(w, r, p)
+	}
 }
