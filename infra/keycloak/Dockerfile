@@ -1,6 +1,6 @@
 
 ## The Build Image
-FROM quay.io/keycloak/keycloak
+FROM quay.io/keycloak/keycloak:8.0.1
 
 USER root
 

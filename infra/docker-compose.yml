@@ -4,5 +4,17 @@ services:
     build:
       context: keycloak
       dockerfile: Dockerfile
+    restart: always
     ports:
-      - "8180:8080"
+      - 8180:8080
+    network_mode: bridge
+  postgres:
+    image: postgres:9.6.16-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: goms
+      POSTGRES_USER: goms
+      POSTGRES_PASSWORD: goms
+    ports:
+      - 5432:5432
+    network_mode: bridge
