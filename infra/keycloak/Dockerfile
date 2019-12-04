@@ -6,6 +6,7 @@ USER root
 
 ## Copy config files for realms
 COPY goms-realm.json /tmp/
+COPY keycloak-add-user.json /opt/jboss/keycloak/standalone/configuration/
 
 ENV KEYCLOAK_USER=admin
 ENV KEYCLOAK_PASSWORD=admin

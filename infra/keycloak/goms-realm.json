@@ -54,6 +54,14 @@
         "clientRole": false,
         "containerId": "gocloak",
         "attributes": {}
+      },
+      {
+        "id": "s2df9e0c-6ffe-4cde-9305-3a6b461f3cc0",
+        "name": "goms_role",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "gocloak",
+        "attributes": {}
       }
     ],
     "client": {
@@ -553,7 +561,7 @@
       "surrogateAuthRequired": false,
       "enabled": true,
       "clientAuthenticatorType": "client-secret",
-      "secret": "**********",
+      "secret": "ac12e719-c2f9-481f-91df-fb2baebc4b74",
       "redirectUris": ["localhost"],
       "webOrigins": [],
       "notBefore": 0,

@@ -1,0 +1,40 @@
+[
+  {
+    "realm": "gocloak",
+    "users": [
+      {
+        "id": "7d3c0768-0a44-4df3-9f25-2faf85b5566c",
+        "createdTimestamp": 1575476597325,
+        "username": "user",
+        "enabled": true,
+        "totp": false,
+        "emailVerified": true,
+        "firstName": "user",
+        "lastName": "user",
+        "email": "user@user.com",
+        "credentials": [
+          {
+            "type": "password",
+            "hashedSaltedValue": "08E4eD3dTHfKcu+dSoYeLXOeW7zK7zp5B3t07hnx67mMJvP0t13PA7179G7Zi9wAt04fX6+dK1Y1WPG+1X9Dlw==",
+            "salt": "ZlxObRxEZ+OsWOJ5PCGxPQ==",
+            "hashIterations": 27500,
+            "counter": 0,
+            "algorithm": "pbkdf2-sha256",
+            "digits": 0,
+            "period": 0,
+            "createdDate": 1575476602533,
+            "config": {}
+          }
+        ],
+        "disableableCredentialTypes": ["password"],
+        "requiredActions": [],
+        "realmRoles": ["goms_role"],
+        "clientRoles": {
+          "account": ["manage-account", "view-profile"]
+        },
+        "notBefore": 0,
+        "groups": []
+      }
+    ]
+  }
+]
