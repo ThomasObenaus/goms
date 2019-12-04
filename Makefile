@@ -49,11 +49,11 @@ docker.push: sep ## Pushes the goms docker image to docker-hub
 	@echo "--> Push image thobe/goms:$(tag)"
 	@docker push thobe/goms:$(tag)
 
-monitoring.up: ## Starts up a prometheus and a grafana instance, scraping metrics of goms and providing a dashboard for sokar.
-	make -C examples/monitoring up
+infra.up: ## Starts up the infra components
+	make -C infra up
 
-monitoring.down: ## Stops the monitoring setup.
-	make -C examples/monitoring down
+infra.down: ## Stops up the infra components
+	make -C infra down
 
 sep:
 	@echo "----------------------------------------------------------------------------------"
