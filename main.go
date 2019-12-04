@@ -7,9 +7,11 @@ import (
 	"syscall"
 
 	"github.com/rs/zerolog"
-	"github.com/thomasobenaus/go-ms-poc/api"
-	"github.com/thomasobenaus/go-ms-poc/auth"
-	"github.com/thomasobenaus/go-ms-poc/logging"
+	"github.com/thomasobenaus/goms/api"
+	"github.com/thomasobenaus/goms/auth"
+	"github.com/thomasobenaus/goms/controller"
+	"github.com/thomasobenaus/goms/logging"
+	"github.com/thomasobenaus/goms/postgres"
 )
 
 var version string
@@ -33,12 +35,17 @@ func main() {
 	loggerMain := loggingFactory.NewNamedLogger("goms")
 
 	api := api.New(port, api.WithLogger(loggingFactory.NewNamedLogger("goms.api")))
-
 	authHandler := auth.New("http://localhost:8180/auth/realms/gocloak/protocol/openid-connect/certs",
 		"goms", "http://localhost:8180/auth/realms/gocloak", auth.WithLogger(loggingFactory.NewNamedLogger("auth")))
 
+	companyCtrl, err := setupControllers()
+	if err != nil {
+		loggerMain.Fatal().Err(err).Msg("Failed to create controllers.")
+	}
+	api.GET(PathCompany, authHandler.HandleSecure(companyCtrl.GetCompany, auth.HasRealmRole("goms_role")))
+
 	// Register build info end-point
-	api.GET(PathBuildInfo, authHandler.HandleSecure(buildInfo.BuildInfo, auth.HasRealmRole("goms_role")))
+	api.GET(PathBuildInfo, buildInfo.BuildInfo)
 	loggerMain.Info().Str("end-point", "build info").Msgf("Build Info end-point set up at %s", PathBuildInfo)
 
 	// Install signal handler for shutdown
@@ -62,4 +69,22 @@ func shutdownHandler(shutdownChan <-chan os.Signal, api *api.API, logger zerolog
 	logger.Info().Msgf("Received %v. Shutting down...", s)
 
 	api.Stop()
+}
+
+func setupControllers() (*controller.CompanyController, error) {
+
+	// open db connection
+	dbconn, err := postgres.New("goms", "goms", "goms")
+	if err != nil {
+		return nil, err
+	}
+
+	if err := dbconn.Ping(); err != nil {
+		return nil, err
+	}
+	companyRepo := postgres.NewPGCompanyRepo(dbconn)
+
+	companyController := controller.New(companyRepo)
+
+	return &companyController, nil
 }
