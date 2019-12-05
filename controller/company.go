@@ -22,7 +22,7 @@ func (coc *CompanyController) GetCompany(w http.ResponseWriter, r *http.Request,
 
 	id, err := strconv.Atoi(ps.ByName("id"))
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -66,13 +66,30 @@ func (coc *CompanyController) GetCompanies(w http.ResponseWriter, r *http.Reques
 func (coc *CompanyController) GetCompaniesWithUsers(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	code := http.StatusOK
 
-	companies, err := coc.repo.GetCompaniesWithUsers()
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	pageSize, err := strconv.Atoi(r.FormValue("pageSize"))
+	if err != nil {
+		pageSize = 10
+	}
+	page, err := strconv.Atoi(r.FormValue("page"))
+	if err != nil {
+		page = 0
+	}
+
+	companies, totalPages, totalElements, err := coc.repo.GetCompaniesWithUsers(page, pageSize)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Add("Content-Type", "application/json")
+	w.Header().Add("TotalPages", strconv.Itoa(totalPages))
+	w.Header().Add("TotalElements", strconv.Itoa(totalElements))
+
 	w.WriteHeader(code)
 
 	enc := json.NewEncoder(w)

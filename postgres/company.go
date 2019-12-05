@@ -1,6 +1,10 @@
 package postgres
 
-import "github.com/thomasobenaus/goms/model"
+import (
+	"math"
+
+	"github.com/thomasobenaus/goms/model"
+)
 
 type CompanyRepoImpl struct {
 	dbConn *DBConnection
@@ -49,33 +53,47 @@ func (cpr *CompanyRepoImpl) GetAll() ([]model.Company, error) {
 	return result, nil
 }
 
-func (cpr *CompanyRepoImpl) GetCompaniesWithUsers() ([]model.CompanyWithUsers, error) {
+func (cpr *CompanyRepoImpl) GetCompaniesWithUsers(page, pageSize int) (companies []model.CompanyWithUsers, totalPages int, totalElements int, err error) {
 
 	type CompanyWithUsersSet map[int]*model.CompanyWithUsers
-	companies := make(CompanyWithUsersSet, 0)
+	companySet := make(CompanyWithUsersSet, 0)
 
 	rows, err := cpr.dbConn.Query("select iu.iam_id,iu.company_id,c.\"name\",c.duns,c.spin,c.city,c.country,c.\"type\" from iam_user iu left join company c on c.id=iu.company_id")
 	if err != nil {
-		return make([]model.CompanyWithUsers, 0), err
+		return make([]model.CompanyWithUsers, 0), 0, 0, err
 	}
 
 	for rows.Next() {
 		company := model.Company{}
 		iamID := ""
 		if err := rows.Scan(&iamID, &company.ID, &company.Name, &company.Duns, &company.Spin, &company.City, &company.Country, &company.Type); err != nil {
-			return make([]model.CompanyWithUsers, 0), err
+			return make([]model.CompanyWithUsers, 0), 0, 0, err
 		}
 
-		if companies[company.ID] == nil {
-			companies[company.ID] = &model.CompanyWithUsers{company, make([]string, 0)}
+		if companySet[company.ID] == nil {
+			companySet[company.ID] = &model.CompanyWithUsers{company, make([]string, 0)}
 		}
-		companies[company.ID].IamIDs = append(companies[company.ID].IamIDs, iamID)
+		companySet[company.ID].IamIDs = append(companySet[company.ID].IamIDs, iamID)
 	}
 
 	result := make([]model.CompanyWithUsers, 0)
-	for _, company := range companies {
+	for _, company := range companySet {
 		result = append(result, *company)
 	}
 
-	return result, err
+	numTotalElements := len(result)
+	numTotalPages := math.Ceil(float64(numTotalElements) / float64(pageSize))
+
+	start := page * pageSize
+	end := (page + 1) * pageSize
+	if start > numTotalElements {
+		start = numTotalElements
+	}
+
+	if end > numTotalElements {
+		end = numTotalElements
+	}
+
+	result = result[start:end]
+	return result, int(numTotalPages), numTotalElements, err
 }

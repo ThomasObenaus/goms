@@ -18,7 +18,7 @@ type CompanyWithUsers struct {
 type CompanyRepo interface {
 	Get(id int) (Company, error)
 	GetAll() ([]Company, error)
-	GetCompaniesWithUsers() ([]CompanyWithUsers, error)
+	GetCompaniesWithUsers(page, pageSize int) (companies []CompanyWithUsers, totalPages int, totalElements int, err error)
 	//FindBy(Type string) ([]Company, error)
 	//Delete(company Company)
 	//Create(company Company)
