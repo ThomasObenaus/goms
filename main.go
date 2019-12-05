@@ -43,6 +43,12 @@ func main() {
 		loggerMain.Fatal().Err(err).Msg("Failed to create controllers.")
 	}
 	api.GET(PathCompany, authHandler.HandleSecure(companyCtrl.GetCompany, auth.HasRealmRole("goms_role")))
+	loggerMain.Info().Str("end-point", "company").Msgf("company end-point set up at %s", PathCompany)
+	api.GET(PathCompaniesAll, authHandler.HandleSecure(companyCtrl.GetCompanies, auth.HasRealmRole("goms_role")))
+	loggerMain.Info().Str("end-point", "companies all").Msgf("companies all end-point set up at %s", PathCompaniesAll)
+
+	api.GET(PathCompanies, authHandler.HandleSecure(companyCtrl.GetCompaniesWithUsers, auth.HasRealmRole("goms_role")))
+	loggerMain.Info().Str("end-point", "companies").Msgf("companies end-point set up at %s", PathCompanies)
 
 	// Register build info end-point
 	api.GET(PathBuildInfo, buildInfo.BuildInfo)

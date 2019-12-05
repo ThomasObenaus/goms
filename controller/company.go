@@ -42,3 +42,43 @@ func (coc *CompanyController) GetCompany(w http.ResponseWriter, r *http.Request,
 	}
 
 }
+
+func (coc *CompanyController) GetCompanies(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	code := http.StatusOK
+
+	companies, err := coc.repo.GetAll()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(code)
+
+	enc := json.NewEncoder(w)
+	if err := enc.Encode(companies); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+}
+
+func (coc *CompanyController) GetCompaniesWithUsers(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	code := http.StatusOK
+
+	companies, err := coc.repo.GetCompaniesWithUsers()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(code)
+
+	enc := json.NewEncoder(w)
+	if err := enc.Encode(companies); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+}

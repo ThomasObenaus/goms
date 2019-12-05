@@ -13,5 +13,7 @@ const (
 	// PathConfig specifies the path where to get the config information used by sokar
 	PathConfig = "/api/config"
 
-	PathCompany = "/api/company/:id"
+	PathCompany      = "/api/company/:id"
+	PathCompaniesAll = "/api/companies/list"
+	PathCompanies    = "/api/companies"
 )
