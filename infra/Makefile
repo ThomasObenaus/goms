@@ -1,3 +1,4 @@
+DASHBOARD_DIR="./monitoring/dashboards"
 
 # This target (taken from: https://gist.github.com/prwhite/8168133) is an easy way to print out a usage/ help of all make targets.
 # For all make targets the text after \#\# will be printed.
@@ -6,7 +7,11 @@ help: ## Prints the help
 
 up: sep ## Start infra components
 	@echo "--> Startup (+build) infra components"
+	@echo "--> Copy dashboards from $(DASHBOARD_DIR)"
+	@mkdir -p monitoring/grafana/dashboards
+	@cp -R $(DASHBOARD_DIR) monitoring/grafana
 	@docker-compose up --build -d
+	@rm -rf monitoring/grafana/dashboards
 
 down: sep ## Stop infra components
 	@echo "--> Stop infra components"
