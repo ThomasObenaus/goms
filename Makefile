@@ -55,6 +55,12 @@ infra.up: ## Starts up the infra components
 infra.down: ## Stops up the infra components
 	make -C infra down
 
+ui.open:
+	@xdg-open http://localhost:15672 # rabbit-ui
+	@xdg-open http://localhost:3000 # grafana
+	@xdg-open http://localhost:9090 # prometheus
+	@xdg-open http://localhost:8180 # keycloak
+
 sep:
 	@echo "----------------------------------------------------------------------------------"
 
