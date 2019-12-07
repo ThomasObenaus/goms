@@ -1,9 +1,10 @@
 package model
 
 type User struct {
-	IamID   string
-	Name    string
-	Surname string
+	IamID     string
+	Email     string
+	Name      string
+	CompanyID int
 }
 
 type UserRepo interface {

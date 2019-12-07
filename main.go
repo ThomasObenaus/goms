@@ -60,16 +60,10 @@ func main() {
 		loggerMain.Fatal().Err(err).Msg("Failed to create controllers.")
 	}
 
-	rabbit, err := rabbitmq.New("guest", "guest", rabbitmq.WithLogger(loggingFactory.NewNamedLogger("goms.rabbitmq")))
-	_ = rabbit
-	if err != nil {
-		loggerMain.Fatal().Err(err).Msg("Failed to connect to rabbitmq")
-	}
-
 	// Install signal handler for shutdown
 	shutDownChan := make(chan os.Signal, 1)
 	signal.Notify(shutDownChan, syscall.SIGINT, syscall.SIGTERM)
-	go shutdownHandler(shutDownChan, api, loggerMain)
+	go shutdownHandler(shutDownChan, api, nil, loggerMain)
 
 	// start api
 	api.Run()
@@ -82,11 +76,13 @@ func main() {
 
 // shutdownHandler handler that shuts down the running components in case
 // a signal was sent on the given channel
-func shutdownHandler(shutdownChan <-chan os.Signal, api *api.API, logger zerolog.Logger) {
+func shutdownHandler(shutdownChan <-chan os.Signal, api *api.API, rabbit *rabbitmq.RabbitMQ, logger zerolog.Logger) {
 	s := <-shutdownChan
 	logger.Info().Msgf("Received %v. Shutting down...", s)
 
 	api.Stop()
+	// TODO close + free connections
+	//rabbit.Close()
 }
 
 func setupControllers(api *api.API, authHandler *auth.Auth, logger zerolog.Logger, requiredRole string) error {
@@ -100,9 +96,9 @@ func setupControllers(api *api.API, authHandler *auth.Auth, logger zerolog.Logge
 	if err := dbconn.Ping(); err != nil {
 		return err
 	}
-	companyRepo := postgres.NewPGCompanyRepo(dbconn)
+	pgRepo := postgres.NewPGRepo(dbconn)
 
-	companyController := controller.NewCompanyController(companyRepo)
+	companyController := controller.NewCompanyController(pgRepo)
 
 	api.GET(PathCompany, authHandler.HandleSecure(companyController.GetCompany, auth.HasRealmRole(requiredRole)))
 	logger.Info().Str("end-point", "company").Msgf("company end-point set up at %s [GET]", PathCompany)
@@ -113,7 +109,7 @@ func setupControllers(api *api.API, authHandler *auth.Auth, logger zerolog.Logge
 	api.GET(PathCompanies, authHandler.HandleSecure(companyController.GetCompaniesWithUsers, auth.HasRealmRole(requiredRole)))
 	logger.Info().Str("end-point", "companies").Msgf("companies end-point set up at %s [GET]", PathCompanies)
 
-	userRepo, err := rabbitmq.New("guest", "guest", rabbitmq.WithLogger(logger))
+	userRepo, err := rabbitmq.New("guest", "guest", rabbitmq.UserRepo(pgRepo), rabbitmq.WithLogger(logger))
 	if err != nil {
 		return err
 	}
