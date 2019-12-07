@@ -16,4 +16,6 @@ const (
 	PathCompany      = "/api/company/:id"
 	PathCompaniesAll = "/api/companies/list"
 	PathCompanies    = "/api/companies"
+
+	PathUser = "/api/user"
 )
