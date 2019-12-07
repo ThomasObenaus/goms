@@ -60,6 +60,7 @@ ui.open:
 	@xdg-open http://localhost:3000 # grafana
 	@xdg-open http://localhost:9090 # prometheus
 	@xdg-open http://localhost:8180 # keycloak
+	@xdg-open http://localhost:7474 # neo4j browser	
 
 sep:
 	@echo "----------------------------------------------------------------------------------"

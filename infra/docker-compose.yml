@@ -38,3 +38,14 @@ services:
       - "15672:15672"
       - "5672:5672"
     network_mode: bridge
+  neo4j:
+    # ui at: http://localhost:7474
+    # un: neo4j, pw: neo4j
+    image: neo4j:latest
+    volumes:
+      - "$HOME/neo4j/data:/data"
+      - "$HOME/neo4j/conf/:/conf/"
+    ports:
+      - 7474:7474
+      - 7687:7687
+    network_mode: bridge
