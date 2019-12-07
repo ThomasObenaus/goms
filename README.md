@@ -11,17 +11,27 @@
   - Checks have to be implemented on our own (e.g. state of DB)
 - [x] Version EP
 - [x] OAuth + Role Check (using keycloak)
-  - PoC impl. working
+  - [x] PoC impl. working
   - Based on github.com/auth0-community/go-auth0 and gopkg.in/square/go-jose.v2
 - [x] PostgreSQL
-  - PoC impl. working
+  - [x] PoC impl. working
   - Based on database/sql and github.com/lib/pq
   - Connection Pooling/ Handling has to be implemented on our own
 - [ ] RabbitMQ
+  - [ ] PoC impl. working
 - [ ] Graph DB (neo4j)
+  - [ ] PoC impl. working
 - [x] Logging (structured)
 - [x] Config (ENV + CLI)
 - [x] Docker MS
 - [ ] REST
+  - [ ] PoC impl. working
+  - http://www.gorillatoolkit.org
+    - provides:
+      - context handling
+      - [x] form to struct conversion (works)
+      - securecookies
+      - sessionhandling
 - [ ] GraphQL
+  - [ ] PoC impl. working
 - [x] Graceful Shutdown

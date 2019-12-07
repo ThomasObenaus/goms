@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/gorilla/schema"
 	"github.com/julienschmidt/httprouter"
 	"github.com/thomasobenaus/goms/model"
 )
@@ -63,6 +64,11 @@ func (coc *CompanyController) GetCompanies(w http.ResponseWriter, r *http.Reques
 
 }
 
+type Paginate struct {
+	PageSize int
+	Page     int
+}
+
 func (coc *CompanyController) GetCompaniesWithUsers(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	code := http.StatusOK
 
@@ -71,16 +77,14 @@ func (coc *CompanyController) GetCompaniesWithUsers(w http.ResponseWriter, r *ht
 		return
 	}
 
-	pageSize, err := strconv.Atoi(r.FormValue("pageSize"))
-	if err != nil {
-		pageSize = 10
-	}
-	page, err := strconv.Atoi(r.FormValue("page"))
-	if err != nil {
-		page = 0
+	paginate := Paginate{}
+	decoder := schema.NewDecoder()
+	if err := decoder.Decode(&paginate, r.Form); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
-	companies, totalPages, totalElements, err := coc.repo.GetCompaniesWithUsers(page, pageSize)
+	companies, totalPages, totalElements, err := coc.repo.GetCompaniesWithUsers(paginate.Page, paginate.PageSize)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

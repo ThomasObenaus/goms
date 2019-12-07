@@ -14,7 +14,7 @@ services:
       POSTGRES_USER: goms
       POSTGRES_PASSWORD: goms
     ports:
-      - 5433:5432
+      - 5432:5432
     network_mode: bridge
   prometheus:
     build:
