@@ -30,3 +30,11 @@ services:
     ports:
       - "3000:3000"
     network_mode: bridge
+  rabbitmq:
+    # ui at: http://localhost:15672
+    # un: guest, pw: guest
+    image: rabbitmq:3-management
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    network_mode: bridge
