@@ -19,6 +19,13 @@ func NewUserController(userRepo model.UserRepo) UserController {
 func (uco *UserController) AddUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 	user := model.User{}
+
+	dec := json.NewDecoder(r.Body)
+	if err := dec.Decode(&user); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	if err := uco.repo.Add(user); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

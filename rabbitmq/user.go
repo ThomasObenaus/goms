@@ -1,7 +1,7 @@
 package rabbitmq
 
 import (
-	"fmt"
+	"encoding/json"
 
 	"github.com/streadway/amqp"
 	"github.com/thomasobenaus/goms/model"
@@ -25,5 +25,26 @@ func createQueue(queueName string, conn *amqp.Connection) (amqp.Queue, error) {
 }
 
 func (rmq *RabbitMQ) Add(user model.User) error {
-	return fmt.Errorf("Not Implemented yet")
+
+	ch, err := rmq.conn.Channel()
+	if err != nil {
+		return err
+	}
+
+	body, err := json.Marshal(user)
+	if err != nil {
+		return err
+	}
+
+	err = ch.Publish(
+		"",                 // exchange
+		rmq.userQueue.Name, // routing key
+		false,              // mandatory
+		false,              // immediate
+		amqp.Publishing{
+			ContentType: "application/json",
+			Body:        []byte(body),
+		})
+
+	return err
 }
