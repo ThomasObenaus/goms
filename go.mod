@@ -9,6 +9,7 @@ require (
 	github.com/lib/pq v1.2.0
 	github.com/prometheus/client_golang v1.2.1
 	github.com/rs/zerolog v1.17.2
+	github.com/streadway/amqp v0.0.0-20190827072141-edfb9018d271
 	github.com/stretchr/testify v1.4.0
 	gopkg.in/square/go-jose.v2 v2.1.7
 )

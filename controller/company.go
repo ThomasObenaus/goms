@@ -14,7 +14,7 @@ type CompanyController struct {
 	repo model.CompanyRepo
 }
 
-func New(companyRepo model.CompanyRepo) CompanyController {
+func NewCompanyController(companyRepo model.CompanyRepo) CompanyController {
 	return CompanyController{companyRepo}
 }
 
@@ -41,7 +41,6 @@ func (coc *CompanyController) GetCompany(w http.ResponseWriter, r *http.Request,
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 }
 
 func (coc *CompanyController) GetCompanies(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {

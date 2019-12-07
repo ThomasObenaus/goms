@@ -6,16 +6,16 @@ import (
 	"github.com/thomasobenaus/goms/model"
 )
 
-type CompanyRepoImpl struct {
+type PGRepo struct {
 	dbConn *DBConnection
 }
 
-func NewPGCompanyRepo(dbConn *DBConnection) model.CompanyRepo {
+func NewPGRepo(dbConn *DBConnection) *PGRepo {
 
-	return &CompanyRepoImpl{dbConn: dbConn}
+	return &PGRepo{dbConn: dbConn}
 }
 
-func (cpr *CompanyRepoImpl) Get(id int) (model.Company, error) {
+func (cpr *PGRepo) Get(id int) (model.Company, error) {
 
 	result := model.Company{}
 
@@ -33,7 +33,7 @@ func (cpr *CompanyRepoImpl) Get(id int) (model.Company, error) {
 	return result, nil
 }
 
-func (cpr *CompanyRepoImpl) GetAll() ([]model.Company, error) {
+func (cpr *PGRepo) GetAll() ([]model.Company, error) {
 	result := make([]model.Company, 0)
 
 	rows, err := cpr.dbConn.Query("select * from company")
@@ -53,7 +53,7 @@ func (cpr *CompanyRepoImpl) GetAll() ([]model.Company, error) {
 	return result, nil
 }
 
-func (cpr *CompanyRepoImpl) GetCompaniesWithUsers(page, pageSize int) (companies []model.CompanyWithUsers, totalPages int, totalElements int, err error) {
+func (cpr *PGRepo) GetCompaniesWithUsers(page, pageSize int) (companies []model.CompanyWithUsers, totalPages int, totalElements int, err error) {
 
 	type CompanyWithUsersSet map[int]*model.CompanyWithUsers
 	companySet := make(CompanyWithUsersSet, 0)
