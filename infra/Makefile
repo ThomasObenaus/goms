@@ -12,6 +12,7 @@ up: sep ## Start infra components
 	@cp -R $(DASHBOARD_DIR) monitoring/grafana
 	@docker-compose up --build -d
 	@rm -rf monitoring/grafana/dashboards
+	@curl -H "Content-Type: application/json" -X POST -d '{"password":"neo4j2"}' -u neo4j:neo4j http://localhost:7474/user/neo4j/password
 
 down: sep ## Stop infra components
 	@echo "--> Stop infra components"

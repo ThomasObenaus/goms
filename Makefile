@@ -55,6 +55,15 @@ infra.up: ## Starts up the infra components
 infra.down: ## Stops up the infra components
 	make -C infra down
 
+seabolt.install:
+	@echo "--> Installs the seabolt driver which is needed for the neo4j driver and pkg_config"
+	@echo "--> Tested under ubuntu 18.04"
+	@wget https://github.com/neo4j-drivers/seabolt/releases/download/v1.7.4/seabolt-1.7.4-Linux-ubuntu-18.04.deb
+	@sudo apt install pkg-config -y
+	@sudo dpkg -i seabolt-1.7.4-Linux-ubuntu-18.04.deb
+	@rm seabolt-1.7.4-Linux-ubuntu-18.04.deb
+
+
 ui.open:
 	@xdg-open http://localhost:15672 # rabbit-ui
 	@xdg-open http://localhost:3000 # grafana

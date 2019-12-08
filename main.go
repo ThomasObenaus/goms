@@ -7,7 +7,6 @@ import (
 	"os/signal"
 	"syscall"
 
-	bolt "github.com/johnnadratowski/golang-neo4j-bolt-driver"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 	"github.com/thomasobenaus/goms/api"
@@ -16,6 +15,8 @@ import (
 	"github.com/thomasobenaus/goms/logging"
 	"github.com/thomasobenaus/goms/postgres"
 	"github.com/thomasobenaus/goms/rabbitmq"
+
+	"github.com/neo4j/neo4j-go-driver/neo4j"
 )
 
 var version string
@@ -61,17 +62,40 @@ func main() {
 		loggerMain.Fatal().Err(err).Msg("Failed to create controllers.")
 	}
 
-	neo4jURL := "bolt://neo4j:neo4j2@localhost:7687"
-	driver := bolt.NewDriver()
-	if driver == nil {
-		loggerMain.Error().Msg("Either username, password, host or port is not correct")
-		loggerMain.Fatal().Err(err).Msg("Failed to create driver for neo.")
-	}
-	db, err := driver.OpenNeo(neo4jURL)
+	driverSB, err := neo4j.NewDriver("bolt://localhost:7687", neo4j.BasicAuth("neo4j", "neo4j2", ""))
 	if err != nil {
 		loggerMain.Fatal().Err(err).Msg("Failed to connect to neo.")
 	}
-	_ = db
+
+	defer driverSB.Close()
+
+	session, err := driverSB.Session(neo4j.AccessModeWrite)
+	if err != nil {
+		loggerMain.Fatal().Err(err).Msg("Failed to create neo4j session")
+	}
+
+	defer session.Close()
+
+	greeting, err := session.WriteTransaction(func(transaction neo4j.Transaction) (interface{}, error) {
+		result, err := transaction.Run(
+			"CREATE (a:Greeting) SET a.message = $message RETURN a.message + ', from node ' + id(a)",
+			map[string]interface{}{"message": "hello, world"})
+		if err != nil {
+			return nil, err
+		}
+
+		if result.Next() {
+			return result.Record().GetByIndex(0), nil
+		}
+
+		return nil, result.Err()
+	})
+	if err != nil {
+		loggerMain.Fatal().Err(err).Msg("Failed to write transaction")
+	}
+
+	loggerMain.Info().Msg(greeting.(string))
+
 	//defer db.Close()
 	//
 	//	result, err := conn.ExecNeo("CREATE (n:NODE {foo: {foo}, bar: {bar}})", map[string]interface{}{"foo": 1, "bar": 2.2})
