@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	bolt "github.com/johnnadratowski/golang-neo4j-bolt-driver"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 	"github.com/thomasobenaus/goms/api"
@@ -60,6 +61,26 @@ func main() {
 		loggerMain.Fatal().Err(err).Msg("Failed to create controllers.")
 	}
 
+	neo4jURL := "bolt://neo4j:neo4j2@localhost:7687"
+	driver := bolt.NewDriver()
+	if driver == nil {
+		loggerMain.Error().Msg("Either username, password, host or port is not correct")
+		loggerMain.Fatal().Err(err).Msg("Failed to create driver for neo.")
+	}
+	db, err := driver.OpenNeo(neo4jURL)
+	if err != nil {
+		loggerMain.Fatal().Err(err).Msg("Failed to connect to neo.")
+	}
+	_ = db
+	//defer db.Close()
+	//
+	//	result, err := conn.ExecNeo("CREATE (n:NODE {foo: {foo}, bar: {bar}})", map[string]interface{}{"foo": 1, "bar": 2.2})
+	//	if err != nil {
+	//		loggerMain.Fatal().Err(err).Msg("Failed to create neo node")
+	//	}
+	//	numResult, _ := result.RowsAffected()
+	//	fmt.Printf("CREATED ROWS: %d\n", numResult) // CREATED ROWS: 1
+
 	// Install signal handler for shutdown
 	shutDownChan := make(chan os.Signal, 1)
 	signal.Notify(shutDownChan, syscall.SIGINT, syscall.SIGTERM)
@@ -83,6 +104,7 @@ func shutdownHandler(shutdownChan <-chan os.Signal, api *api.API, rabbit *rabbit
 	api.Stop()
 	// TODO close + free connections
 	//rabbit.Close()
+	//pgsql.Close()
 }
 
 func setupControllers(api *api.API, authHandler *auth.Auth, logger zerolog.Logger, requiredRole string) error {

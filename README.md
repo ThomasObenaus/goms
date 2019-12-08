@@ -22,6 +22,8 @@
   - [x] PoC impl. working
 - [ ] Graph DB (neo4j)
   - [ ] PoC impl. working
+  - official driver: https://github.com/neo4j/neo4j-go-driver
+  - used: https://github.com/johnnadratowski/golang-neo4j-bolt-driver for PoC
 - [x] Logging (structured)
 - [x] Config (ENV + CLI)
   - [ ] PoC impl. working
